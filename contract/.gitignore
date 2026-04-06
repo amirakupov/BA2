@@ -1,0 +1,24 @@
+# Compiler files
+cache/
+out/
+
+.idea/
+node_modules/
+
+lib/
+
+# Ignores development broadcast logs
+/broadcast
+!/broadcast
+/broadcast/*/31337/
+/broadcast/**/dry-run/
+
+.DS_Store
+Thumbs.db
+
+
+# Docs
+docs/
+
+# Dotenv file
+.env

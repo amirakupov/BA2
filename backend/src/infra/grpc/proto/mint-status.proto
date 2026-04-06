@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package mintstatus;
+
+service MintStatusService {
+  rpc WatchMintStatus(WatchMintStatusRequest) returns (stream MintStatusEvent);
+}
+
+message WatchMintStatusRequest {
+  int64 order_id = 1;
+  string wallet = 2;
+}
+
+message MintStatusEvent {
+  string stage = 1;
+  string order_status = 2;
+  string mint_status = 3;
+  string tx_hash = 4;
+  uint64 block_number = 5;
+  uint64 confirmations = 6;
+  string message = 7;
+  string error = 8;
+  string emitted_at = 9;
+}
