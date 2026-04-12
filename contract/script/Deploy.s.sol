@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 import "forge-std/Script.sol";
-import {Naturo} from "../src/Naturo.sol";
+import {MintContract} from "../src/MintContract.sol";
 
 contract Deploy is Script{
 
@@ -11,7 +11,7 @@ contract Deploy is Script{
 
         vm.startBroadcast(pk);
 
-        Naturo nft = new Naturo(vm.envString("BASE_URI"), owner);
+        MintContract nft = new Naturo(vm.envString("BASE_URI"), owner);
 
         nft.setMaxSupply(1, 2400);
         nft.setMaxSupply(2, 2400);

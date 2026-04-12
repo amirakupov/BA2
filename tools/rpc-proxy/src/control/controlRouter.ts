@@ -19,12 +19,10 @@ const VALID_FAULTS = new Set<FaultType>([
 export function buildControlRouter(state: ProxyState, logger: RequestLogger): Router {
     const router = Router();
 
-    // ── Health ──
     router.get("/health", (_req, res) => {
         res.json({ ok: true });
     });
 
-    // ── Status ──
     router.get("/status", (_req, res) => {
         res.json({
             active: state.getScenario() !== null,
@@ -33,7 +31,6 @@ export function buildControlRouter(state: ProxyState, logger: RequestLogger): Ro
         });
     });
 
-    // ── Activate custom scenario ──
     router.post("/scenario", (req, res) => {
         const body = req.body as Partial<ScenarioConfig>;
 
@@ -58,14 +55,13 @@ export function buildControlRouter(state: ProxyState, logger: RequestLogger): Ro
         res.json({ ok: true, scenario: config });
     });
 
-    // ── Activate preset ──
     router.post("/scenario/preset/:name", (req, res) => {
         const presetName = req.params.name;
         const preset = PRESETS[presetName];
 
         if (!preset) {
             res.status(400).json({
-                error: `Unknown preset: ${presetName}. Available: ${Object.keys(PRESETS).join(", ")}`,
+                error: `Unknown preset: ${presetName}`,
             });
             return;
         }
@@ -86,14 +82,12 @@ export function buildControlRouter(state: ProxyState, logger: RequestLogger): Ro
         res.json({ ok: true, scenario: config });
     });
 
-    // ── Deactivate ──
     router.delete("/scenario", (_req, res) => {
         state.clearScenario();
         logger.logScenarioChange("SCENARIO DEACTIVATED");
         res.json({ ok: true });
     });
 
-    // ── Reset stats ──
     router.post("/stats/reset", (_req, res) => {
         state.resetStats();
         res.json({ ok: true });

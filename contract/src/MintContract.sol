@@ -5,7 +5,7 @@ import {ERC1155} from "../lib/openzeppelin-contracts/contracts/token/ERC1155/ERC
 import {Ownable} from "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import {Strings} from "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 
-contract Naturo is ERC1155, Ownable{
+contract MintContract is ERC1155, Ownable{
     mapping(uint256 => uint256) public maxSupply; //max supply for each token id
     mapping(uint256 => uint256) public totalMinted; //total minted for each token id
     mapping(address => bool) public isMinter;
@@ -34,14 +34,6 @@ contract Naturo is ERC1155, Ownable{
 
     function uri(uint256 id) public view override returns (string memory) {
         return string(abi.encodePacked(_base, Strings.toString(id), ".json"));
-    }
-
-    function getTotalMinted(uint256 id) external view returns (uint256) {
-        return totalMinted[id];
-    }
-
-    function getMaxSupply(uint256 id) external view returns (uint256) {
-        return maxSupply[id];
     }
 
     function setMinter(address minter, bool canMint) external onlyOwner {

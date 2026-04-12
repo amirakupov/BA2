@@ -2,10 +2,10 @@
 pragma solidity ^0.8.20;
 
 import {Test} from "forge-std/Test.sol";
-import {Naturo} from "../src/Naturo.sol";
+import {MintContract} from "../src/MintContract.sol";
 
 contract NaturoTest is Test {
-    Naturo public naturo;
+    MintContract public naturo;
 
     address public owner = address(1);
     address public minter = address(2);
