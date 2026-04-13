@@ -17,23 +17,28 @@ export class MintEventsBus {
 
     constructor(private readonly eventLogRepo: EventLogRepository) {}
 
-    publish(orderId: number, event: MintEventPayload) {
+    async publish(orderId: number, event: MintEventPayload) {
         const emitted_at = new Date();
 
-        this.eventLogRepo
-            .create({
-                order_id: orderId,
-                stage: event.stage,
-                order_status: event.order_status ?? "",
-                mint_status: event.mint_status ?? "",
-                tx_hash: event.tx_hash ?? "",
-                block_number: event.block_number ?? 0,
-                confirmations: event.confirmations ?? 0,
-                message: event.message ?? "",
-                error: event.error ?? "",
-                emitted_at,
-            })
-            .catch((err) => console.error("EventLog write failed:", err));
+        try {
+            await this.eventLogRepo
+                .create({
+                    order_id: orderId,
+                    stage: event.stage,
+                    order_status: event.order_status ?? "",
+                    mint_status: event.mint_status ?? "",
+                    tx_hash: event.tx_hash ?? "",
+                    block_number: event.block_number ?? 0,
+                    confirmations: event.confirmations ?? 0,
+                    message: event.message ?? "",
+                    error: event.error ?? "",
+                    emitted_at,
+                })
+        }catch(err) {
+            console.error("EventLog write failed:", err);
+            return;
+        }
+
 
         const fullEvent = { ...event, emitted_at: emitted_at.toISOString() };
         console.log("Publishing event for orderId", orderId, fullEvent);

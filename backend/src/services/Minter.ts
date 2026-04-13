@@ -5,7 +5,7 @@ const NATURO_ABI = [
     "function maxSupply(uint256 id) view returns (uint256)"
 ];
 
-export class NaturoMinter {
+export class Minter {
 
     private readonly contract: ethers.Contract;
     private readonly provider: ethers.JsonRpcProvider;
@@ -22,16 +22,6 @@ export class NaturoMinter {
         console.log("RPC:", process.env.CHAIN_RPC_URL);
         console.log("NATURO_ADDRESS:", process.env.NATURO_ADDRESS);
         console.log("MINTER_PK exists:", !!process.env.MINTER_PK);
-    }
-
-    async getTotalMinted(tokenId: number){
-        const totalMinted = await this.contract.totalMinted(tokenId);
-        return Number(totalMinted);
-    }
-
-    async getMaxSupply(tokenId: number){
-        const maxSupply = await this.contract.maxSupply(tokenId);
-        return Number(maxSupply);
     }
 
     async submitMint(to: string, tokenId: number, quantity: number): Promise<string> {

@@ -1,6 +1,6 @@
 import { MintRepository } from "../repo/MintRepository.js";
 import { OrderRepository } from "../repo/OrderRepository.js";
-import { NaturoMinter } from "./NaturoMinter.js";
+import { Minter } from "./Minter.js";
 import { MintStatus } from "../enums/MintStatus.js";
 import { OrderStatus } from "../enums/OrderStatus.js";
 import { MintEventsBus } from "./MintEventBus.js";
@@ -11,7 +11,7 @@ export class MintTrackerService {
     constructor(
         private readonly ordersRepo: OrderRepository,
         private readonly mintsRepo: MintRepository,
-        private readonly minter: NaturoMinter,
+        private readonly minter: Minter,
         private readonly eventsBus: MintEventsBus
     ) {}
 
@@ -24,7 +24,7 @@ export class MintTrackerService {
                 status: MintStatus.TX_PENDING,
             });
 
-            this.eventsBus.publish(orderId, {
+            await this.eventsBus.publish(orderId, {
                 stage: "TX_PENDING",
                 order_status: OrderStatus.MINTING,
                 mint_status: MintStatus.TX_PENDING,
@@ -42,7 +42,7 @@ export class MintTrackerService {
                     const durationMs = Date.now() - startedAt;
 
                     if (durationMs > 3000) {
-                        this.eventsBus.publish(orderId, {
+                        await this.eventsBus.publish(orderId, {
                             stage: "RPC_DELAY",
                             order_status: OrderStatus.MINTING,
                             mint_status: MintStatus.TX_PENDING,
@@ -55,7 +55,7 @@ export class MintTrackerService {
                     }
 
                     if (!receipt) {
-                        this.eventsBus.publish(orderId, {
+                        await this.eventsBus.publish(orderId, {
                             stage: "TX_PENDING",
                             order_status: OrderStatus.MINTING,
                             mint_status: MintStatus.TX_PENDING,
@@ -80,7 +80,7 @@ export class MintTrackerService {
                             status: OrderStatus.CLAIMABLE,
                         });
 
-                        this.eventsBus.publish(orderId, {
+                        await this.eventsBus.publish(orderId, {
                             stage: "MINT_FAILED",
                             order_status: OrderStatus.CLAIMABLE,
                             mint_status: MintStatus.FAILED,
@@ -107,7 +107,7 @@ export class MintTrackerService {
                         status: OrderStatus.FULFILLED,
                     });
 
-                    this.eventsBus.publish(orderId, {
+                    await this.eventsBus.publish(orderId, {
                         stage: "TX_CONFIRMED",
                         order_status: OrderStatus.FULFILLED,
                         mint_status: MintStatus.CONFIRMED,
@@ -139,7 +139,7 @@ export class MintTrackerService {
                         stage = "RPC_UNAVAILABLE";
                     }
 
-                    this.eventsBus.publish(orderId, {
+                    await this.eventsBus.publish(orderId, {
                         stage,
                         order_status: OrderStatus.MINTING,
                         mint_status: MintStatus.TX_PENDING,
@@ -163,7 +163,7 @@ export class MintTrackerService {
                 status: OrderStatus.CLAIMABLE,
             });
 
-            this.eventsBus.publish(orderId, {
+            await this.eventsBus.publish(orderId, {
                 stage: "MINT_FAILED",
                 order_status: OrderStatus.CLAIMABLE,
                 mint_status: MintStatus.FAILED,
@@ -183,7 +183,7 @@ export class MintTrackerService {
                 status: OrderStatus.CLAIMABLE,
             });
 
-            this.eventsBus.publish(orderId, {
+            await this.eventsBus.publish(orderId, {
                 stage: "MINT_FAILED",
                 order_status: OrderStatus.CLAIMABLE,
                 mint_status: MintStatus.FAILED,

@@ -11,7 +11,7 @@ export class MockPaymentsClient {
         const fakeId = `mock_${Date.now()}`;
         const orderId = body.order_id;
 
-        console.log(`[MockNowPayments] Invoice created for order ${orderId} (${fakeId})`);
+        console.log(`Invoice created for order ${orderId} (${fakeId})`);
 
         // simulate IPN after 5 seconds
         if (this.ordersRepo) {
@@ -19,9 +19,9 @@ export class MockPaymentsClient {
             setTimeout(async () => {
                 try {
                     await repo.updateById(orderId, { status: "CLAIMABLE" });
-                    console.log(`[MockNowPayments] Order ${orderId} → CLAIMABLE (auto-confirmed)`);
+                    console.log(`Order ${orderId} → CLAIMABLE (auto-confirmed)`);
                 } catch (e) {
-                    console.error(`[MockNowPayments] Failed to auto-confirm order ${orderId}:`, e);
+                    console.error(`Failed to auto-confirm order ${orderId}:`, e);
                 }
             }, 5000);
         }

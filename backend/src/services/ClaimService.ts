@@ -1,6 +1,6 @@
 import { OrderRepository } from "../repo/OrderRepository.js";
 import { MintRepository } from "../repo/MintRepository.js";
-import { NaturoMinter } from "./NaturoMinter.js";
+import { Minter } from "./Minter.js";
 import { MintTrackerService } from "./MintTrackerService.js";
 import {OrderStatus} from "../enums/OrderStatus.js";
 import {MintStatus} from "../enums/MintStatus.js";
@@ -9,14 +9,14 @@ import {MintEventsBus} from "./MintEventBus.js";
 export class ClaimService {
     private readonly ordersRepo: OrderRepository;
     private readonly mintsRepo: MintRepository;
-    private readonly minter: NaturoMinter;
+    private readonly minter: Minter;
     private readonly tracker: MintTrackerService;
     private readonly eventsBus: MintEventsBus;
 
     constructor(
         ordersRepo: OrderRepository,
         mintsRepo: MintRepository,
-        minter: NaturoMinter,
+        minter: Minter,
         tracker: MintTrackerService,
         eventsBus: MintEventsBus
     ) {
@@ -72,7 +72,7 @@ export class ClaimService {
                 });
             }
 
-            this.eventsBus.publish(orderId, {
+            await this.eventsBus.publish(orderId, {
                 stage: "TX_SUBMITTED",
                 order_status: OrderStatus.MINTING,
                 mint_status: MintStatus.TX_SUBMITTED,
@@ -109,7 +109,6 @@ export class ClaimService {
                     error: String(error),
                 });
             }
-
             throw error;
         }
     }
