@@ -1,0 +1,1 @@
+export type State = "idle" | "claiming" | "streaming" | "polling" | "closed" | "error";
