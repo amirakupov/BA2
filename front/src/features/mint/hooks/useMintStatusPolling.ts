@@ -18,9 +18,11 @@ export type UseMintStatusPollingReturn = {
     stopPoll: () => void;
     reset: () => void;
     ttffMs: number | null;
+    completionTimeMs: number | null;
 };
 
 type EventLogEntry = {
+    id: number;
     stage: string;
     order_status: string;
     mint_status: string;
@@ -52,13 +54,14 @@ export function useMintStatusPolling(): UseMintStatusPollingReturn {
     const [claimResult, setClaimResult] = useState<ClaimResponse | null>(null);
     const [streamError, setStreamError] = useState<string>("");
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const lastEmittedAtRef = useRef<string>("");
+    const lastIdRef = useRef<number>(0);
     const stoppedRef = useRef(false);
 
     // Time to first feedback
     const startTime = useRef<number | null>(null);
     const ttffRecorded = useRef(false);
     const [ttffMs, setTtffMs] = useState<number | null>(null);
+    const [completionTimeMs, setCompletionTimeMs] = useState<number | null>(null);
 
     const hasTerminalEvent = useMemo(
         () => events.some((e) => isTerminalStage(e.stage)),
@@ -69,7 +72,8 @@ export function useMintStatusPolling(): UseMintStatusPollingReturn {
         const now = Date.now();
         const receivedAt = new Date(now).toISOString();
 
-        if (!ttffRecorded.current && startTime.current !== null && entries.length > 0) {
+        const hasMintRelated = entries.some(e => e.stage !== "CONNECTED");
+        if (!ttffRecorded.current && startTime.current !== null && hasMintRelated) {
             setTtffMs(now - startTime.current);
             ttffRecorded.current = true;
         }
@@ -91,6 +95,10 @@ export function useMintStatusPolling(): UseMintStatusPollingReturn {
             };
         });
         setEvents((prev) => [...prev, ...newItems]);
+
+        if (entries.some(e => TERMINAL_STAGES.includes(e.stage)) && startTime.current !== null) {
+            setCompletionTimeMs(now - startTime.current);
+        }
     }
 
     function clearTimer() {
@@ -104,7 +112,7 @@ export function useMintStatusPolling(): UseMintStatusPollingReturn {
         clearTimer();
         stoppedRef.current = false;
         setConnectionState("polling");
-        lastEmittedAtRef.current = "";
+        lastIdRef.current = 0;
 
         const poll = async () => {
             if (stoppedRef.current) return;
@@ -112,7 +120,7 @@ export function useMintStatusPolling(): UseMintStatusPollingReturn {
                 const res = (await api.getOrderEvents(
                     orderId,
                     wallet,
-                    lastEmittedAtRef.current || undefined
+                    lastIdRef.current || undefined
                 )) as EventsResponse;
 
                 if (!res.ok) {
@@ -124,7 +132,7 @@ export function useMintStatusPolling(): UseMintStatusPollingReturn {
 
                 if (res.events.length > 0) {
                     const lastEntry = res.events[res.events.length - 1];
-                    lastEmittedAtRef.current = lastEntry.emitted_at;
+                    lastIdRef.current = lastEntry.id;
                     appendEvents(res.events);
 
                     if (res.events.some((e) => isTerminalStage(e.stage))) {
@@ -184,6 +192,7 @@ export function useMintStatusPolling(): UseMintStatusPollingReturn {
         startTime.current = null;
         ttffRecorded.current = false;
         setTtffMs(null);
+        setCompletionTimeMs(null);
 
         stoppedRef.current = true;
         clearTimer();
@@ -203,6 +212,7 @@ export function useMintStatusPolling(): UseMintStatusPollingReturn {
         startPollOnly,
         stopPoll,
         reset,
-        ttffMs
+        ttffMs,
+        completionTimeMs,
     };
 }

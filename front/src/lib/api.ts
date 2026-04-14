@@ -26,9 +26,9 @@ export const api = {
     getOrder: (id: string, wallet: string) =>
         get(`${BASE}/orders/${id}?wallet=${encodeURIComponent(wallet)}`),
 
-    getOrderEvents: (id: string, wallet: string, since?: string) => {
+    getOrderEvents: (id: string, wallet: string, sinceId?: number) => {
         const params = new URLSearchParams({ wallet });
-        if (since) params.set("since", since);
+        if (sinceId !== undefined) params.set("since_id", String(sinceId));
         return get(`${BASE}/orders/${id}/events?${params.toString()}`);
     },
 };

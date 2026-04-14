@@ -19,7 +19,10 @@ export type UseMintStatusReturn = {
     stopWatch: () => void;
     reset: () => void;
     ttffMs: number | null;
+    completionTimeMs: number | null;
 };
+
+const TERMINAL_STAGES = ["TX_CONFIRMED", "MINT_FAILED"];
 
 export function useMintStatus(): UseMintStatusReturn {
     const [events, setEvents] = useState<UiMintEvent[]>([]);
@@ -32,6 +35,7 @@ export function useMintStatus(): UseMintStatusReturn {
     const startTime = useRef<number | null>(null);
     const ttffRecorded = useRef(false);
     const [ttffMs, setTtffMs] = useState<number | null>(null);
+    const [completionTimeMs, setCompletionTimeMs] = useState<number | null>(null);
 
     const hasTerminalEvent = useMemo(
         () => events.some((e) => e.stage === "TX_CONFIRMED" || e.stage === "MINT_FAILED"),
@@ -49,7 +53,10 @@ export function useMintStatus(): UseMintStatusReturn {
         const now = Date.now();
         const receivedAt = new Date(now).toISOString();
 
-        if (!ttffRecorded.current && startTime.current !== null) {
+        const stage = raw.stage ?? "";
+        const isMintRelated = stage !== "CONNECTED";
+
+        if (!ttffRecorded.current && startTime.current !== null && isMintRelated) {
             setTtffMs(now - startTime.current);
             ttffRecorded.current = true;
         }
@@ -67,6 +74,10 @@ export function useMintStatus(): UseMintStatusReturn {
             latencyMs: mapLatency(raw.emittedAt ?? raw.emitted_at),
         };
         setEvents((prev) => [...prev, item]);
+
+        if (TERMINAL_STAGES.includes(stage) && startTime.current !== null) {
+            setCompletionTimeMs(now - startTime.current);
+        }
     }
 
     async function runStream(orderId: string, wallet: string, ac: AbortController) {
@@ -140,6 +151,7 @@ export function useMintStatus(): UseMintStatusReturn {
         startTime.current = null;
         ttffRecorded.current = false;
         setTtffMs(null);
+        setCompletionTimeMs(null);
         abortRef.current?.abort();
         abortRef.current = null;
         setEvents([]);
@@ -159,5 +171,6 @@ export function useMintStatus(): UseMintStatusReturn {
         stopWatch,
         reset,
         ttffMs,
+        completionTimeMs,
     };
 }
