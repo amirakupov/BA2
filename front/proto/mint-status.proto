@@ -9,6 +9,7 @@ service MintStatusService {
 message WatchMintStatusRequest {
   int64 order_id = 1;
   string wallet = 2;
+  int64 since_event_id = 3;
 }
 
 message MintStatusEvent {
