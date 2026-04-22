@@ -2,6 +2,7 @@ export type Transport = "grpc" | "http_poll";
 
 export type Scenario =
     | "baseline"
+    | "baseline_slow"
     | "slow_rpc"
     | "timeout"
     | "rate_limit"
@@ -16,6 +17,7 @@ export interface TrialConfig {
     wallet: string;
     pollIntervalMs: number;
     timeoutMs: number;
+    blockTimeSec: number;
 }
 
 export interface EventRecord {
@@ -38,6 +40,7 @@ export interface TrialResult {
     eventCount: number;
     requestCount: number;
     messageCount: number;
+    blockTimeSec: number;
     events: EventRecord[];
     proxyStats: object;
 }

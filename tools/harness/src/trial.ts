@@ -20,8 +20,6 @@ export async function runTrial(config: TrialConfig): Promise<TrialResult> {
             if (finished) return;
             finished = true;
             clearTimeout(timeoutTimer);
-
-            // Stop transport
             if (cancelTransport) cancelTransport();
 
             const proxyStats = await api.getProxyStats().catch(() => ({}));
@@ -39,6 +37,7 @@ export async function runTrial(config: TrialConfig): Promise<TrialResult> {
                 eventCount: events.length,
                 requestCount,
                 messageCount,
+                blockTimeSec: config.blockTimeSec,
                 events,
                 proxyStats,
             });
@@ -59,13 +58,11 @@ export async function runTrial(config: TrialConfig): Promise<TrialResult> {
             }
         };
 
-        // Timeout guard
         const timeoutTimer = setTimeout(
             () => finish("timeout", `trial timeout after ${config.timeoutMs}ms`),
             config.timeoutMs,
         );
 
-        // Start transport BEFORE claim (same as frontend hooks do)
         let cancelTransport: (() => void) | null = null;
 
         if (config.transport === "grpc") {

@@ -11,7 +11,7 @@ contract Deploy is Script{
 
         vm.startBroadcast(pk);
 
-        MintContract nft = new Naturo(vm.envString("BASE_URI"), owner);
+        MintContract nft = new MintContract(vm.envString("BASE_URI"), owner);
 
         nft.setMaxSupply(1, 2400);
         nft.setMaxSupply(2, 2400);

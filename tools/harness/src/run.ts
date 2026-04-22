@@ -14,6 +14,7 @@ const { values } = parseArgs({
         wallet:       { type: "string", default: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" },
         pollInterval: { type: "string", default: "2000" },
         timeout:      { type: "string", default: "90000" },
+        blockTime:    { type: "string", default: "0" },
         out:          { type: "string", default: "" },
     },
 });
@@ -25,8 +26,8 @@ const warmup = Number(values.warmup);
 const wallet = values.wallet!;
 const pollIntervalMs = Number(values.pollInterval);
 const timeoutMs = Number(values.timeout);
+const blockTimeSec = Number(values.blockTime);
 
-// Default output path: results/<scenario>_<transport>.jsonl
 const outDir = path.resolve("results");
 mkdirSync(outDir, { recursive: true });
 const outFile = values.out || path.join(outDir, `${scenario}_${transport}.jsonl`);
@@ -35,10 +36,13 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
     console.log(`\n=== ${scenario} / ${transport} / ${totalTrials} trials (+${warmup} warmup) ===`);
-    console.log(`    output: ${outFile}\n`);
+    console.log(`    block-time: ${blockTimeSec}s  output: ${outFile}\n`);
 
-    // Activate fault scenario on RPC proxy
-    await api.activateScenario(scenario);
+    await api.setAnvilMining(blockTimeSec);
+
+    // Activate fault scenario on RPC proxy (baseline_slow uses baseline proxy preset)
+    const proxyPreset = scenario === "baseline_slow" ? "baseline" : scenario;
+    await api.activateScenario(proxyPreset);
 
     // Clear output file
     writeFileSync(outFile, "");
@@ -64,23 +68,22 @@ async function main() {
             wallet,
             pollIntervalMs,
             timeoutMs,
+            blockTimeSec,
         });
 
         const ttff = result.ttffMs !== null ? `${result.ttffMs.toFixed(0)}ms` : "n/a";
         const comp = result.completionTimeMs !== null ? `${result.completionTimeMs.toFixed(0)}ms` : "n/a";
         console.log(`${result.outcome}  ttff=${ttff}  completion=${comp}  events=${result.eventCount}`);
 
-        // Only write non-warmup trials
         if (!isWarmup) {
             appendFileSync(outFile, JSON.stringify(result) + "\n");
         }
 
-        // Cooldown between trials
         await sleep(2000);
     }
 
-    // Deactivate scenario
     await api.deactivateScenario();
+    await api.setAnvilMining(0);
 
     console.log(`\nDone. ${totalTrials} trials saved to ${outFile}`);
     process.exit(0);
