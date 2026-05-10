@@ -40,9 +40,18 @@ async function main() {
 
     await api.setAnvilMining(blockTimeSec);
 
-    // Activate fault scenario on RPC proxy (baseline_slow uses baseline proxy preset)
+    // Scenarios where fault must activate AFTER claim (to let submitMint succeed)
+    const LATE_ACTIVATION = new Set(["intermittent_timeout", "intermittent_rate_limit", "intermittent_conn_reset"]);
+    const isLateActivation = LATE_ACTIVATION.has(scenario);
+
+    // Activate fault scenario on RPC proxy
+    // baseline_slow uses baseline proxy preset (fault comes from slow block time, not proxy)
     const proxyPreset = scenario === "baseline_slow" ? "baseline" : scenario;
-    await api.activateScenario(proxyPreset);
+    if (isLateActivation) {
+        await api.activateScenario("baseline");
+    } else {
+        await api.activateScenario(proxyPreset);
+    }
 
     // Clear output file
     writeFileSync(outFile, "");
@@ -54,6 +63,10 @@ async function main() {
             : `trial ${i + 1}/${totalTrials}`;
 
         // Fresh order for each trial
+        // For late-activation scenarios, ensure proxy is on baseline before claim
+        if (isLateActivation) {
+            await api.activateScenario("baseline");
+        }
         await api.resetStats();
         const orderId = await api.createOrder(wallet);
         await api.makeClaimable(orderId);
@@ -69,6 +82,7 @@ async function main() {
             pollIntervalMs,
             timeoutMs,
             blockTimeSec,
+            activateAfterClaim: isLateActivation ? proxyPreset : undefined,
         });
 
         const ttff = result.ttffMs !== null ? `${result.ttffMs.toFixed(0)}ms` : "n/a";

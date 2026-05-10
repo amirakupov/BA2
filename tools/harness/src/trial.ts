@@ -102,6 +102,8 @@ export async function runTrial(config: TrialConfig): Promise<TrialResult> {
             const result = await api.claim(config.orderId, config.wallet);
             if (!result.ok) {
                 finish("stream_error", `claim rejected: ${result.reason || "unknown"}`);
+            } else if (config.activateAfterClaim) {
+                await api.activateScenario(config.activateAfterClaim);
             }
         } catch (err: any) {
             finish("stream_error", `claim failed: ${err.message}`);

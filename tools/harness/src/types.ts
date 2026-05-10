@@ -7,7 +7,10 @@ export type Scenario =
     | "timeout"
     | "rate_limit"
     | "connection_reset"
-    | "intermittent";
+    | "intermittent"
+    | "intermittent_timeout"
+    | "intermittent_rate_limit"
+    | "intermittent_conn_reset";
 
 export interface TrialConfig {
     transport: Transport;
@@ -18,6 +21,7 @@ export interface TrialConfig {
     pollIntervalMs: number;
     timeoutMs: number;
     blockTimeSec: number;
+    activateAfterClaim?: string;
 }
 
 export interface EventRecord {

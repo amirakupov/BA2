@@ -4,12 +4,15 @@ import type { RequestLogger } from "../logging/RequestLogger.js";
 import type { ScenarioConfig, FaultType } from "../types.js";
 
 const PRESETS: Record<string, Omit<ScenarioConfig, "name">> = {
-    baseline:         { fault: "baseline",         targetMethods: ["*"], intermittent: false },
-    slow_rpc:         { fault: "slow_rpc",         targetMethods: ["*"], intermittent: false },
-    timeout:          { fault: "timeout",          targetMethods: ["*"], intermittent: false },
-    rate_limit:       { fault: "rate_limit",       targetMethods: ["*"], intermittent: false },
-    connection_reset: { fault: "connection_reset", targetMethods: ["*"], intermittent: false },
-    intermittent:     { fault: "slow_rpc",         targetMethods: ["*"], intermittent: true  },
+    baseline:                    { fault: "baseline",         targetMethods: ["*"], intermittent: false },
+    slow_rpc:                    { fault: "slow_rpc",         targetMethods: ["*"], intermittent: false },
+    timeout:                     { fault: "timeout",          targetMethods: ["*"], intermittent: false },
+    rate_limit:                  { fault: "rate_limit",       targetMethods: ["*"], intermittent: false },
+    connection_reset:            { fault: "connection_reset", targetMethods: ["*"], intermittent: false },
+    intermittent:                { fault: "slow_rpc",         targetMethods: ["*"], intermittent: true  },
+    intermittent_timeout:        { fault: "timeout",          targetMethods: ["*"], intermittent: true  },
+    intermittent_rate_limit:     { fault: "rate_limit",       targetMethods: ["*"], intermittent: true  },
+    intermittent_conn_reset:     { fault: "connection_reset", targetMethods: ["*"], intermittent: true  },
 };
 
 const VALID_FAULTS = new Set<FaultType>([

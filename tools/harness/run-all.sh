@@ -19,6 +19,9 @@ SCENARIOS=(
   "rate_limit:12"
   "connection_reset:12"
   "intermittent:12"
+  "intermittent_timeout:12"
+  "intermittent_rate_limit:12"
+  "intermittent_conn_reset:12"
 )
 
 for entry in "${SCENARIOS[@]}"; do
